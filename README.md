@@ -6,7 +6,7 @@ With this project I am trying to create a immutable infrastructure with sample d
 
 For now project only includes technologies like Kubernetes, Ansible, Vagrant and Jenkins but in near future tools like SonarQube will be added and playbook will be similar to best practices with some test cases.
 
-##Technologies
+## Technologies
 
 - Ansible
 - Vagrant 
