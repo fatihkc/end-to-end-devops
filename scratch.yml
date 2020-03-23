@@ -1,0 +1,26 @@
+---
+- name: Boot Infra
+  hosts: odin
+  remote_user: vagrant
+  become: yes
+
+  roles:
+    - common
+
+- name:
+  hosts: master
+  remote_user: vagrant
+  become: yes
+
+  roles:
+    - java
+    - jenkins
+    
+- name: Kubernetes
+  hosts: odin
+  remote_user: vagrant
+  become: yes
+
+  roles:
+    - docker
+    - kubernetes

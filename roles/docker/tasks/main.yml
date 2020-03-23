@@ -1,0 +1,37 @@
+---
+- name: Install required packages for Docker
+  yum:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+      
+- name: Add Docker repo
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+  become: yes
+
+- name: Install Docker and dependencies
+  yum:
+    name: 
+      - docker-ce
+    state: latest
+
+- name: Start Docker Service
+  service: name=docker state=started enabled=yes
+
+- name: Add vagrant to Docker group
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  with_items:
+    - vagrant
+    - jenkins
+
+- name: Copy daemon.json for Docker
+  template: src=daemon.json dest=/etc/docker/daemon.json
+
+- name: Restart docker
+  service: name=docker state=restarted

@@ -1,0 +1,81 @@
+#GENERAL VARIABLES
+
+master_ip_address: 192.168.7.2
+
+#COMMON VARIABLES
+
+common_packages:
+  - curl
+  - wget
+  - python3-pip
+  - yum-utils
+
+kernel_modules:
+  - br_netfilter #For kubeadm
+#  - overlay
+#  - ip_vs
+#  - ip_vs_rr
+#  - ip_vs_wrr
+#  - ip_vs_sh
+#  - nf_conntrack_ipv4
+
+sysctl_entries:
+  - {key: net.bridge.bridge-nf-call-ip6tables, value: 1}
+  - {key: net.bridge.bridge-nf-call-iptables,  value: 1}
+  - {key: net.ipv4.ip_forward,  value: 1}
+
+#JAVA VARIABLES
+
+java_package: java-11-openjdk-devel
+
+#JENKINS VARIABLES
+
+github_repo: end-to-end-devops
+github_username: ######
+github_password: ######
+
+dockerhub_repo: end-to-end-devops
+dockerhub_username: #####
+dockerhub_password: #####
+dockerhub_email: #####
+
+jenkins_admin_username: fatih
+jenkins_admin_password: fatih
+jenkins_hostname: localhost
+jenkins_port: 8080
+
+jenkins_init_changes:
+  - option: "JENKINS_ARGS"
+    value: "--prefix={{ jenkins_url_prefix }}"
+  - option: "{{ jenkins_java_options_env_var }}"
+    value: "{{ jenkins_java_options }}"
+
+
+jenkins_plugin_timeout: 30
+
+jenkins_plugins:
+  - timestamper
+  - credentials-binding
+  - email-ext
+  - build-timeout
+  - workflow-aggregator
+  - pipeline-stage-view
+  - pipeline-build-step
+  - github-branch-source
+  - ssh-slaves
+  - pipeline-github-lib
+  - matrix-auth
+  - mailer
+  - antisamy-markup-formatter
+  - gradle
+  - pam-auth
+  - git
+  - ws-cleanup
+  - cloudbees-folder
+  - configuration-as-code
+  - job-dsl
+
+#KUBERNETES VARIABLES
+
+pod_network_cidr: 192.168.0.0/16
+k8s_interface: eth1

@@ -1,0 +1,122 @@
+---
+- name: Download Jenkins Repo
+  get_url:
+    url: http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+    mode: '0640'
+
+- rpm_key:
+    state: present
+    key: https://jenkins-ci.org/redhat/jenkins-ci.org.key
+
+- name: Install Jenkins packages and dependencies
+  yum: name=jenkins state=present
+
+- name: Copy configuration file for Jenkins
+  template:
+    src: jenkins-config.j2
+    dest: /etc/sysconfig/jenkins
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Create initial script directory
+  file:
+    path: "/var/lib/jenkins/init.groovy.d"
+    state: directory
+    owner: jenkins
+    group: jenkins
+
+- name: Add admin user to Jenkins
+  template:
+    src: basic-security-groovy.j2
+    dest: /var/lib/jenkins/init.groovy.d/basic-security.groovy
+    owner: jenkins
+    group: jenkins
+    mode: 0775
+
+# - firewalld:
+#     port: "{{ jenkins_port }}/tcp"
+#     permanent: yes
+#     state: enabled
+
+- name: Start Jenkins Service
+  service: name=jenkins state=started enabled=yes
+
+- name: Copy Configuration-as-Code plugin YAML
+  template: src=config-as-code.yaml dest=/var/lib/jenkins/jenkins.yaml
+
+- name: Wait for Jenkins to start up before proceeding.
+  command: >
+    curl -D - --silent --max-time 5 http://localhost:{{ jenkins_port }}/cli/
+  args:
+    warn: false
+  register: result
+  until: >
+    (result.stdout.find("403 Forbidden") != -1)
+    or (result.stdout.find("200 OK") != -1)
+    and (result.stdout.find("Please wait while") == -1)
+  retries: 60
+  delay: 5
+  changed_when: false
+  check_mode: false
+
+- name: Get the jenkins-cli jarfile from the Jenkins server.
+  get_url:
+    url: "http://localhost:{{ jenkins_port }}/jnlpJars/jenkins-cli.jar"
+    dest: /opt/jenkins-cli.jar
+  register: jarfile_get
+  until: "'OK' in jarfile_get.msg or '304' in jarfile_get.msg or 'file already exists' in jarfile_get.msg"
+  retries: 5
+  delay: 10
+  check_mode: false
+
+- name: Remove Jenkins security init scripts after first startup.
+  file:
+    path: "/var/lib/jenkins/init.groovy.d/basic-security.groovy"
+    state: absent
+
+- name: Create Jenkins updates directory
+  file:
+    path: "/var/lib/jenkins/updates"
+    state: directory
+    owner: jenkins
+    group: jenkins
+
+- name: Download current plugin updates from Jenkins update site.
+  get_url:
+    url: "https://update-center.json"
+    dest: "/var/lib/jenkins/updates/default.json"
+    owner: jenkins
+    group: jenkins
+    mode: 0440
+  changed_when: false
+  register: get_result
+  until: get_result is success
+  retries: 5
+  delay: 3
+
+- name: Remove first and last line from json file.
+  replace:
+    path: "/var/lib/jenkins/updates/default.json"
+    regexp: "1d;$d"
+
+- name: Install Jenkins plugins using password.
+  jenkins_plugin:
+    name: "{{ item.name | default(item) }}"
+    version: "{{ item.version | default(omit) }}"
+    jenkins_home: /var/lib/jenkins
+    url_username: "{{ jenkins_admin_username }}"
+    url_password: "{{ jenkins_admin_password }}"
+    state: present
+    timeout: 30
+    updates_expiration: 86400
+    updates_url: https://updates.jenkins.io
+    url: "http://localhost:{{ jenkins_port }}"
+    with_dependencies: true
+  with_items: "{{ jenkins_plugins }}"
+  notify: restart jenkins
+  register: plugin_result
+  until: plugin_result is success
+  retries: 5
+  delay: 2

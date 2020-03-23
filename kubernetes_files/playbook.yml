@@ -1,0 +1,19 @@
+- hosts: localhost
+  remote_user: vagrant
+  tasks:
+
+  - name:
+    command: kubectl create secret docker-registry dockerhub --docker-server=docker.io --docker-username={{ dockerhub_username}} --docker-password={{ dockerhub_password }} --docker-email={{ dockerhub_email }}
+
+  - name: Deploy the service
+    k8s:
+      state: present
+      definition: "{{ lookup('template', 'services/service.yaml') | from_yaml }}"
+      validate_certs: no
+      namespace: default
+  - name: Deploy the application
+    k8s:
+      state: present
+      validate_certs: no
+      namespace: default
+      definition: "{{ lookup('template', 'deployments/deployment.yaml') | from_yaml }}"
