@@ -19,7 +19,7 @@ For now project only includes technologies like Kubernetes, Ansible, Vagrant and
 - Golang
 
 
-## After startup
+## What happens after startup
 
 After provisioning servers, Ansible uses common role for updating packages, changing DNS settings, disabling swap etc.
 
