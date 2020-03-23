@@ -1,0 +1,99 @@
+---
+- name: Ensure Kubernetes repository exists
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    enabled: true
+    gpgcheck: true
+    repo_gpgcheck: true
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    gpgkey:
+      - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+      - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: Add Kubernetes GPG keys
+  rpm_key:
+    key: "{{ item }}"
+    state: present
+  with_items:
+    - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+    - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: Make cache if Kubernetes GPG key changed
+  command: "yum -q makecache -y --disablerepo='*' --enablerepo='kubernetes'"
+
+# - firewalld:
+#     port: "{{ item }}/tcp"
+#     permanent: yes
+#     state: enabled
+#     immediate: yes
+#   loop:
+#     - 6443
+#     - 2379
+#     - 2380
+#     - 10250
+#     - 10251
+#     - 10252
+#   when: kubernetes_role == 'master'
+
+# - firewalld:
+#     port: "{{ item }}/tcp"
+#     permanent: yes
+#     state: enabled
+#     immediate: yes
+#   loop:
+#     - 10250
+#     - 30000-32767
+#   when: kubernetes_role == 'node'
+
+
+- name: Install Kubernetes packages
+  yum:
+    name:
+      - kubelet
+      - kubectl
+      - kubeadm
+    state: present
+
+- name: Configure KUBELET_EXTRA_ARGS
+  lineinfile:
+    path: /etc/sysconfig/kubelet
+    regexp: '^KUBELET_EXTRA_ARGS='
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ ansible_host }}
+    state: present
+
+- name: Ensure kubelet is started and enabled at boot
+  service:
+    name: kubelet
+    state: started
+    enabled: true
+
+- name: Check if Kubernetes has already been initialized
+  stat:
+    path: /etc/kubernetes/admin.conf
+
+- include_tasks: master-setup.yml
+  when: kubernetes_role == 'master'
+
+- include_tasks: node-setup.yml
+  when: kubernetes_role == 'node'
+
+- name: Setup kubeconfig for jenkins user
+  command: "{{ item }}"
+  with_items:
+   - mkdir -p /var/lib/jenkins/.kube
+   - cp -i /etc/kubernetes/admin.conf /var/lib/jenkins/.kube/config
+   - chown jenkins:jenkins /var/lib/jenkins/.kube/config
+  when: kubernetes_role == 'master'
+
+- name: Restart docker
+  service:
+    name: docker
+    state: restarted
+  when: kubernetes_role == 'master'
+
+- name: Restart jenkins
+  service:
+    name: jenkins
+    state: restarted
+  when: kubernetes_role == 'master'

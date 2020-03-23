@@ -1,0 +1,34 @@
+---
+- name: Initialize Kubernetes master with kubeadm init
+  command: kubeadm init --apiserver-advertise-address={{ master_ip_address }} --pod-network-cidr={{ pod_network_cidr }}
+
+- name: Setup kubeconfig for vagrant user
+  command: "{{ item }}"
+  with_items:
+   - mkdir -p /home/vagrant/.kube
+   - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+   - chown vagrant:vagrant /home/vagrant/.kube/config
+
+- name: Setup kubeconfig for root user
+  command: "{{ item }}"
+  with_items:
+   - mkdir -p /root/.kube
+   - cp -i /etc/kubernetes/admin.conf /root/.kube/config
+   - chown root:root /root/.kube/config
+
+- name: Copy kube-flannel for iface paramater
+  template: src=kube-flannel.yml dest=/home/vagrant/kube-flannel.yml
+
+- name: Configure Flannel networking
+  command: "{{ item }}"
+  with_items:
+    - kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/k8s-manifests/kube-flannel-rbac.yml
+    - kubectl apply -f /home/vagrant/kube-flannel.yml
+
+- name: Create token for nodes
+  command: kubeadm token create --print-join-command
+  register: join_command
+
+- name: Copy join command to local file
+  become: false
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
