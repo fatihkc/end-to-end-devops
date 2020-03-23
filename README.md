@@ -11,8 +11,8 @@ For now project only includes technologies like Kubernetes, Ansible, Vagrant and
 - Ansible
 - Vagrant 
 - Jenkins
- - Configuration As Code
- - Pipeline
+   - Configuration As Code
+   - Pipeline
 - Kubernetes
  - Flannel
 - Docker
