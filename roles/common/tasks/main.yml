@@ -1,8 +1,8 @@
 ---
-# - name: Update all packages
-#   yum:
-#    name: '*'
-#    state: latest
+- name: Update all packages
+  yum:
+   name: '*'
+   state: latest
 
 - name: Install EPEL repository
   yum:
@@ -12,32 +12,17 @@
 
 - name: Install common packages
   yum:
-    name:
-      - curl
-      - wget
-      - git
-      - ansible
-      - python3-pip
-      - initscripts
-      - yum-utils
+    name: "{{ common_packages}}"
     state: latest
-  with_items: "{{ common_packages }}"
 
-- name: Install pip
-  pip:
-    name: pip
-    executable: pip3
-    state: latest
-    extra_args: --upgrade
-
-- name: Install openshift package 
+- name: Install ansible and openshift package 
   pip:
     name:
       - ansible
       - openshift
-    executable: pip3.6
-    extra_args: --user
+    executable: pip3
 
+#For testing environment firewall can be stopped.
 - name: Make sure that firewalld stopped
   service: name=firewalld state=stopped
 
@@ -58,10 +43,12 @@
       192.168.7.4 node2.example.com node2
     state: present
 
+#For testing environment SELinux can be disabled
 - name: Disable SELinux
   selinux:
     state: disabled
 
+#For Kubernetes we need to disable swap. Otherwise It becomes harder to provision cluster.
 - name: Disable SWAP-1
   shell: |
       swapoff -a
@@ -72,13 +59,13 @@
     regexp: '^(.+ swap .*)$'
     replace: '# \1'
 
-- name: Load required kernel modules for Kubernetes
+- name: Load required kernel modules
   modprobe:
     name: "{{ item }}"
     state: present
   with_items: "{{ kernel_modules }}"
 
-- name: Modify sysctl entries for Kubernetes
+- name: Modify sysctl entries
   sysctl:
     name: '{{ item.key }}'
     value: '{{ item.value }}'

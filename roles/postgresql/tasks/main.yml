@@ -1,0 +1,37 @@
+---
+- name: Add PostgreSQL repo
+  yum:
+    name: 'https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm'
+    state: present
+
+- name: Install PostgreSQL 12 and Psycopg2 packages
+  yum:
+    name: "{{ psql_packages }}"
+    state: latest
+    enablerepo: pgdg12
+
+- name: Initialize PostgreSQL
+  command: /usr/pgsql-12/bin/postgresql-12-setup initdb
+  ignore_errors: yes
+
+- name: Copy pg_hba.conf file
+  template: src=pg_hba.conf dest=/var/lib/pgsql/12/data/pg_hba.conf
+
+- name: Start PostgreSQL-12 Service
+  service: name=postgresql-12 state=started enabled=yes
+
+- name: Add sonar user to database
+  become: true
+  become_user: postgres
+  postgresql_user:
+    name: sonar
+    password: sonar
+    role_attr_flags: CREATEDB
+
+- name: Create sonar database
+  become: true
+  become_user: postgres
+  postgresql_db:
+    name: sonar
+    encoding: UTF-8
+    owner: sonar

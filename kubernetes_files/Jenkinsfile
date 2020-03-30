@@ -39,6 +39,11 @@ pipeline {
                 sh 'go test ./src/ -v -short'            
             }
         }
+        stage('SonarQube analysis') {
+            steps {
+                    sh 'sonar-scanner   -Dsonar.projectKey=test   -Dsonar.sources=.   -Dsonar.host.url=http://192.168.7.2:9000/sonarqube   -Dsonar.login=admin -Dsonar.password=admin'
+            }
+        }
         stage('Publish') {
             environment {
                 registryCredential = 'dockerhub'
@@ -57,7 +62,7 @@ pipeline {
             steps {
                 script{
                     def image_id = registry + ":$BUILD_NUMBER"
-                    sh "ansible-playbook kubernetes_files/playbook.yml --extra-vars \"image_id=${image_id}\" -i ./"
+                    sh "/usr/local/bin/ansible-playbook kubernetes_files/playbook.yml --extra-vars \"image_id=${image_id}\" -i ./"
                 }
             }
         }

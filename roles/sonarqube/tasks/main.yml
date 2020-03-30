@@ -1,0 +1,79 @@
+---
+- name: Make sure that unzip package is installed
+  yum: name=unzip state=present
+
+- name: Download and extract SonarQube 8.1
+  unarchive:
+    src: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonarqube_version }}.zip
+    dest: /opt
+    remote_src: yes
+
+- name: Change sonarqube directory name
+  command: mv /opt/sonarqube-{{ sonarqube_version }} /opt/sonarqube
+
+- name: Create sonar user
+  user:
+    name: sonar
+
+- name: Change ownership of /opt/sonarqube
+  file:
+    path: /opt/sonarqube
+    state: directory
+    recurse: yes
+    owner: sonar
+    group: sonar
+
+- name: Create /var/sonarqube/temp
+  file:
+    path: /var/sonarqube/temp
+    state: directory
+    owner: sonar
+    group: sonar
+    mode: '0755'
+
+- name: Create /var/sonarqube/data
+  file:
+    path: /var/sonarqube/data
+    state: directory
+    owner: sonar
+    group: sonar
+    mode: '0755'
+
+- name: Copy sonarqube.properties file
+  template: src=sonar.properties dest=/opt/sonarqube/conf/sonar.properties
+
+- name: Copy sonarqube.service file
+  template: src=sonarqube.service dest=/etc/systemd/system/sonarqube.service
+
+- name: Change sysctl entry for vm.max_map_count
+  command: sysctl -w vm.max_map_count=262144
+
+- name: Reload daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Start SonarQube service
+  service:
+    name: sonarqube
+    state: started
+
+# - firewalld:
+#     port: 9000/tcp
+#     permanent: yes
+#     state: enabled
+
+- name: Install Sonar Scanner
+  unarchive:
+    src: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-{{ sonar_scanner_cli_version }}-linux.zip
+    dest: /opt/sonarqube
+    remote_src: yes
+
+- name: Link binaries to /usr/bin
+  file: 
+    src: /opt/sonarqube/sonar-scanner-{{ sonar_scanner_cli_version }}-linux/bin/{{ item }}
+    dest: /usr/bin/{{ item }}
+    state: link
+    force: yes
+  with_items:
+    - sonar-scanner
+    - sonar-scanner-debug

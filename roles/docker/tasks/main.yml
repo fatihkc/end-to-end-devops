@@ -30,6 +30,7 @@
     - vagrant
     - jenkins
 
+#Kubernetes need systemd driver.
 - name: Copy daemon.json for Docker
   template: src=daemon.json dest=/etc/docker/daemon.json
 

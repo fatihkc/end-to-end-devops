@@ -1,5 +1,5 @@
 ---
-- name: Download Jenkins Repo
+- name: Add Jenkins repository
   get_url:
     url: http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
     dest: /etc/yum.repos.d/jenkins.repo
@@ -9,10 +9,13 @@
     state: present
     key: https://jenkins-ci.org/redhat/jenkins-ci.org.key
 
+#2.204.6 version is important. For know this project is working only with that version.
+#New versions are crashing due to security issues for now.
 - name: Install Jenkins packages and dependencies
-  yum: name=jenkins state=present
+  yum: name=jenkins-2.204.6 state=present
 
-- name: Copy configuration file for Jenkins
+#Configure as you want.
+- name: Create configuration file for Jenkins
   template:
     src: jenkins-config.j2
     dest: /etc/sysconfig/jenkins

@@ -1,6 +1,10 @@
 - hosts: localhost
   remote_user: vagrant
   tasks:
+  
+  - name:
+    command: kubectl delete secret dockerhub
+    ignore_errors: yes
 
   - name:
     command: kubectl create secret docker-registry dockerhub --docker-server=docker.io --docker-username={{ dockerhub_username}} --docker-password={{ dockerhub_password }} --docker-email={{ dockerhub_email }}

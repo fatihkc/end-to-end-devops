@@ -9,6 +9,10 @@ common_packages:
   - wget
   - python3-pip
   - yum-utils
+  - python-setuptools
+  - initscripts
+  - git
+  - unzip
 
 kernel_modules:
   - br_netfilter #For kubeadm
@@ -28,16 +32,32 @@ sysctl_entries:
 
 java_package: java-11-openjdk-devel
 
+#POSTGRESQL VARIABLES
+
+psql_packages:
+  - postgresql12-server 
+  - postgresql12
+  - postgresql12-contrib
+  - postgresql12-libs
+  - python3-psycopg2
+  - python-psycopg2
+
+#SONARQUBE VARIABLES
+
+sonarqube_version: 8.1.0.31237
+sonarqube_port: 9000
+sonar_scanner_cli_version: 4.2.0.1873
+
 #JENKINS VARIABLES
 
-github_repo: end-to-end-devops
-github_username: ######
-github_password: ######
+github_repo: end-to-end-infra
+github_username: ******
+github_password: ******
 
-dockerhub_repo: end-to-end-devops
-dockerhub_username: #####
-dockerhub_password: #####
-dockerhub_email: #####
+dockerhub_repo: end-to-end-infra
+dockerhub_username: ******
+dockerhub_password: ******
+dockerhub_email: ******
 
 jenkins_admin_username: fatih
 jenkins_admin_password: fatih
@@ -74,6 +94,7 @@ jenkins_plugins:
   - cloudbees-folder
   - configuration-as-code
   - job-dsl
+  - sonar
 
 #KUBERNETES VARIABLES
 

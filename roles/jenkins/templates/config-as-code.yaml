@@ -100,12 +100,13 @@ tool:
     installations:
     - home: "git"
       name: "Default"
+
 jobs:
   - script: >
       pipelineJob('pipeline') {
           definition {
               cpsScm {
-                scriptPath 'config_files/Jenkinsfile'
+                scriptPath 'kubernetes_files/Jenkinsfile'
                 scm {
                   git {
                       remote { 
