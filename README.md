@@ -105,4 +105,9 @@ As you can see I don't use firewall for this project. You can enable firewalld a
 
 - Add monitoring tool with alert system
 - Molecule for testing playbook
+<<<<<<< HEAD
 - Write Turkish blog post about project
+=======
+- Write Turkish blog post about project
+- Add comments for every step of the project
+>>>>>>> f70758d2e50ca3e5c0a9887bb2a09ddad25cf029
