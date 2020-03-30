@@ -50,11 +50,11 @@ sonar_scanner_cli_version: 4.2.0.1873
 
 #JENKINS VARIABLES
 
-github_repo: end-to-end-infra
+github_repo: end-to-end-devops
 github_username: ******
 github_password: ******
 
-dockerhub_repo: end-to-end-infra
+dockerhub_repo: end-to-end-devops
 dockerhub_username: ******
 dockerhub_password: ******
 dockerhub_email: ******
