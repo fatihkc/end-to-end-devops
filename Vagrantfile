@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
         master.vm.synced_folder ".", "/vagrant", disabled: true
         master.vm.provider "virtualbox" do |v|
           v.name = "master"
-          v.memory = 4096
+          v.memory = 6000
           v.cpus = 2
           end
     end

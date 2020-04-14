@@ -1,0 +1,11 @@
+- name: Create monitoring namespace
+  command:  kubectl create namespace monitoring
+  become_user: vagrant
+
+- name: Install prometheus-operator
+  command: helm install --namespace monitoring demo stable/prometheus-operator
+  become_user: vagrant
+
+- name: Port-forward
+  command: kubectl port-forward --address 0.0.0.0 svc/demo-grafana 80 --namespace monitoring
+  become_user: vagrant

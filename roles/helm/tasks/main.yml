@@ -1,0 +1,22 @@
+---
+- name: Install Helm 3.1.2
+  unarchive:
+    src: https://get.helm.sh/helm-v3.1.2-linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Change sonarqube directory name
+  command: mv /tmp/linux-amd64/helm /usr/bin/helm
+
+- name: Add repo
+  command: helm repo add stable https://kubernetes-charts.storage.googleapis.com
+  become_user: vagrant
+  when: kubernetes_role == 'master'
+
+- name: Update repo
+  command: helm repo update
+  become_user: vagrant
+  when: kubernetes_role == 'master'
+
+- include_tasks: prometheus-operator.yml
+  when: kubernetes_role == 'master

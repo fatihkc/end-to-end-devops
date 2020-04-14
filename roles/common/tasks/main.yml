@@ -21,6 +21,7 @@
       - ansible
       - openshift
     executable: pip3
+    extra_args: --user
 
 #For testing environment firewall can be stopped.
 - name: Make sure that firewalld stopped
