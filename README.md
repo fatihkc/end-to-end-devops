@@ -112,3 +112,7 @@ You can also use cloud providers for better internet connection but make sure th
 ## About Firewalld and SELinux
 
 As you can see I don't use firewall for this project. You can enable firewalld and ports, I added them inside project but for testing environment, I don't want to use them.
+
+## TODO
+
+Change helm steps after [this](https://github.com/ansible-collections/kubernetes/pull/61) issue is closed.
