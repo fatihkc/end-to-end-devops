@@ -13,12 +13,16 @@ For now project only includes technologies like Kubernetes, Ansible, Vagrant and
 - Jenkins
    - Configuration As Code
    - Pipeline
+- Kubernetes
+   - Docker
+   - Helm
+   - Flannel
 - SonarQube
    - Sonar-Scanner
 - PostgreSQL
-- Kubernetes
-   - Flannel
-- Docker
+- Prometheus-Operator
+   - Grafana
+   - AlertManager
 - Golang
 
 
@@ -43,6 +47,7 @@ After triggering job with commiting GitHub repository, app inside src directory 
 - Ansible
 - Github account
 - Dockerhub account
+- 8 GB RAM minimum
 
 ----
 ## Usage
@@ -73,24 +78,31 @@ to see where is your ssh keys that you created.
 
 ### Provisioning
 
-    cd ~
     vagrant up
 
 ### Show time
 
-Use ansible-playbook for installing Jenkins, Docker and Kubernetes.
+Use ansible-playbook for installing Jenkins, Docker and Kubernetes. You use -vvv parameter to see what happens behind it.
 
     ansible-playbook -i hosts scratch.yml
 
 ### Testing pipeline
 
-Just commit to your project and Jenkins job will be triggered. After finishing job check your application on your host.
+Just commit to your project and Jenkins job will be triggered. After finishing job, check your application on your host.
 
     curl 192.168.7.2:32000
 
+### Access Services
+
+192.168.7.2:8080 Jenkins  
+192.168.7.2:9000/sonarqube SonarQube  
+192.168.7.2:80 Grafana  
+192.168.7.2:9090 Prometheus  
+192.168.7.2.9093 AlertManager
+ 
 ### Better, Faster, Stronger!
 
-Actually I don't download, build and install all of the things. Everything as Code projects like that are taking too much time to build. For example common and docker roles are used in all virtual machines. I created a box with that roles so I don't always update packages and install new ones. You can use snapshots for development too. 
+Actually I don't download, build and install all of the things. Everything as Code projects like that are taking too much time to build. For example common and docker roles are used in all virtual machines. I created a box with that roles so I don't always update packages and install new ones. You can use snapshots for development too. You use [this](https://scotch.io/tutorials/how-to-create-a-vagrant-base-box-from-an-existing-one) link for creating your own box.
 
 Everything depends on your commit. If you change little pieces of all roles, then you need to build project from scrath. If you change a little line of code in Configuration-as-Code plugin, just reload file and don't waste your time with building. 
 
@@ -100,9 +112,3 @@ You can also use cloud providers for better internet connection but make sure th
 ## About Firewalld and SELinux
 
 As you can see I don't use firewall for this project. You can enable firewalld and ports, I added them inside project but for testing environment, I don't want to use them.
-
-## TODO
-
-- Add monitoring tool with alert system
-- Molecule for testing playbook
-- Write Turkish blog post about project

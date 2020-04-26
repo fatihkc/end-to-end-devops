@@ -1,3 +1,5 @@
+###THIS FILE WILL BE REPLACED WHEN ANSIBLE STARTS TO SUPPORT HELM 3.
+
 - name: Create monitoring namespace
   command:  kubectl create namespace monitoring
   become_user: vagrant
